@@ -1,8 +1,18 @@
 const Author = require("./models/author");
 const Book = require("./models/book");
+const jwt = require("jsonwebtoken");
+const User = require("./models/user");
+const { AuthenticationError, UserInputError } = require("apollo-server");
+
+require("dotenv").config();
+
+const JWT_SECRET = process.env.SECRET;
 
 const resolvers = {
   Query: {
+    me: (_, __, { currentUser }) => {
+      return currentUser;
+    },
     bookCount: () => {
       return Book.collection.countDocuments();
     },
@@ -44,9 +54,14 @@ const resolvers = {
   },
 
   Mutation: {
-    addBook: async (_, args) => {
+    addBook: async (_, args, { currentUser }) => {
       const author = await Author.findOne({ name: args.author?.toLowerCase() });
-      const book = new Book({ ...args, author: author.id || null });
+      const book = new Book({ ...args, author: author?.id || null });
+
+      if (!currentUser) {
+        throw new AuthenticationError("not authenticated");
+      }
+
       try {
         await book.save();
       } catch (error) {
@@ -67,10 +82,12 @@ const resolvers = {
       }
       return await author;
     },
-
-    editAuthor: async (_, args) => {
-      let authorToUpdate = await Author.findOne({ name: args.name });
+    editAuthor: async (_, args, { currentUser }) => {
+      let authorToUpdate = await Author.findById(args.id);
       authorToUpdate.born = args.setBornTo;
+      if (!currentUser) {
+        throw new AuthenticationError("not authenticated");
+      }
       try {
         await authorToUpdate.save();
       } catch (error) {
@@ -80,6 +97,29 @@ const resolvers = {
       }
 
       return authorToUpdate;
+    },
+    createUser: async (_, args) => {
+      const user = await new User({ ...args });
+
+      return user.save().catch((error) => {
+        throw new UserInputError(error.message, {
+          invalidArgs: args,
+        });
+      });
+    },
+    login: async (_, args) => {
+      const user = await User.findOne({ username: args.username });
+
+      if (!user || args.password !== "secret") {
+        throw new UserInputError("wrong credentials");
+      }
+
+      const userForToken = {
+        username: user.username,
+        id: user._id,
+      };
+
+      return { value: jwt.sign(userForToken, JWT_SECRET) };
     },
   },
 };

@@ -1,4 +1,4 @@
-const { ApolloServer, UserInputError, gql } = require("apollo-server");
+const { gql } = require("apollo-server");
 
 const typeDefs = gql`
   type Query {
@@ -6,6 +6,7 @@ const typeDefs = gql`
     authorCount: Int!
     allBooks(author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
+    me: User
   }
 
   type Mutation {
@@ -16,7 +17,9 @@ const typeDefs = gql`
       genres: [String]
     ): Book
     addAuthor(name: String!, born: Int): Author
-    editAuthor(name: String!, setBornTo: Int): Author
+    editAuthor(id: ID!, setBornTo: Int): Author
+    createUser(username: String!, favoriteGenre: String): User
+    login(username: String!, password: String!): Token
   }
 
   type Book {
@@ -28,9 +31,20 @@ const typeDefs = gql`
   }
 
   type Author {
+    id: ID!
     name: String!
     bookCount: Int!
     born: Int
+  }
+
+  type User {
+    id: ID!
+    username: String!
+    favoriteGenre: String!
+  }
+
+  type Token {
+    value: String!
   }
 `;
 
