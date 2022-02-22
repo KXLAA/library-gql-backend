@@ -3,8 +3,11 @@ const Book = require("./models/book");
 const jwt = require("jsonwebtoken");
 const User = require("./models/user");
 const { AuthenticationError, UserInputError, gql } = require("apollo-server");
+const { PubSub } = require("graphql-subscriptions");
 
 require("dotenv").config();
+
+const pubsub = new PubSub();
 
 const JWT_SECRET = process.env.SECRET;
 
@@ -69,6 +72,7 @@ const resolvers = {
           invalidArgs: args,
         });
       }
+      pubsub.publish("BOOK_ADDED", { bookAdded: book });
       return await book;
     },
     addAuthor: async (_, args) => {
@@ -120,6 +124,11 @@ const resolvers = {
       };
 
       return { value: jwt.sign(userForToken, JWT_SECRET) };
+    },
+  },
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterator(["BOOK_ADDED"]),
     },
   },
 };
