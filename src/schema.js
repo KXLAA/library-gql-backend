@@ -1,4 +1,4 @@
-import { gql } from "apollo-server";
+const { ApolloServer, UserInputError, gql } = require("apollo-server");
 
 const typeDefs = gql`
   type Query {
@@ -13,8 +13,9 @@ const typeDefs = gql`
       title: String!
       author: String!
       published: Int!
-      genres: [String]!
+      genres: [String]
     ): Book
+    addAuthor(name: String!, born: Int): Author
     editAuthor(name: String!, setBornTo: Int): Author
   }
 
@@ -22,7 +23,7 @@ const typeDefs = gql`
     id: ID!
     title: String!
     published: Int!
-    author: String!
+    author: Author!
     genres: [String]!
   }
 
@@ -33,4 +34,4 @@ const typeDefs = gql`
   }
 `;
 
-export default typeDefs;
+module.exports = typeDefs;

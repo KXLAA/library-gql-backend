@@ -1,6 +1,24 @@
-import { ApolloServer, gql } from "apollo-server";
-import typeDefs from "./schema.js";
-import resolvers from "./resolvers.js";
+const { ApolloServer } = require("apollo-server");
+const mongoose = require("mongoose");
+const typeDefs = require("./schema");
+const resolvers = require("./resolvers");
+require("dotenv").config();
+
+console.log("connecting to", process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useFindAndModify: false,
+  useCreateIndex: true,
+});
+
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log("connected to MongoDB");
+  })
+  .catch((error) => {
+    console.log("error connection to MongoDB:", error.message);
+  });
 
 const server = new ApolloServer({
   typeDefs,

@@ -1,4 +1,6 @@
-import { v4 as uuidv4 } from "uuid";
+const { v4: uuidv4 } = require("uuid");
+const Author = require("./models/author");
+const Book = require("./models/book");
 
 let books = [
   {
@@ -105,11 +107,16 @@ const resolvers = {
     },
   },
   Mutation: {
-    addBook: (_, args) => {
-      let book = { ...args, id: uuidv4() };
-      books = books.concat(book);
-      return book;
+    addBook: async (_, args) => {
+      const author = await Author.findOne({ name: args.author?.toLowerCase() });
+      const book = new Book({ ...args, author: author.id || null });
+      return await book.save();
     },
+    addAuthor: async (_, args) => {
+      const author = new Author({ ...args });
+      return await author.save();
+    },
+
     editAuthor: (_, { name, setBornTo }) => {
       let authorToUpdate = authors.find((author) => author.name === name);
       if (!authorToUpdate) {
@@ -122,4 +129,4 @@ const resolvers = {
   },
 };
 
-export default resolvers;
+module.exports = resolvers;
