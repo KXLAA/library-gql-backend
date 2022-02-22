@@ -2,7 +2,7 @@ const Author = require("./models/author");
 const Book = require("./models/book");
 const jwt = require("jsonwebtoken");
 const User = require("./models/user");
-const { AuthenticationError, UserInputError } = require("apollo-server");
+const { AuthenticationError, UserInputError, gql } = require("apollo-server");
 
 require("dotenv").config();
 
@@ -28,7 +28,7 @@ const resolvers = {
         return await Book.find({ author: authorId.id });
       }
       if (genre) {
-        return await Book.find({ genre: { $in: genre } });
+        return await Book.find({ genres: { $in: genre } });
       }
       return await Book.find({});
     },
