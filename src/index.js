@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const typeDefs = require("./schema");
 const resolvers = require("./resolvers");
 require("dotenv").config();
+const Book = require("./models/book");
 
 console.log("connecting to", process.env.MONGODB_URI, {
   useNewUrlParser: true,
